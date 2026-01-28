@@ -41,6 +41,8 @@ __slurm_llnl: >-
 __slurm_log_dir: "{{ __slurm_llnl | ternary('/var/log/slurm-llnl', '/var/log/slurm') }}"
 __slurm_debian: "{{ ansible_os_family == 'Debian' }}"
 __slurm_redhat: "{{ ansible_os_family == 'RedHat' }}"
+__slurm_suse: "{{ ansible_os_family == 'Suse' }}"
+
 
 __slurm_config_default:
   AuthType: auth/munge
@@ -85,7 +87,18 @@ __slurm_redhat_packages:
   slurmd: [munge, slurm, slurm-slurmd]
   slurmdbd: [munge, slurm-slurmdbd]
 
-__slurm_packages: "{{ __slurm_debian_packages if __slurm_debian else __slurm_redhat_packages }}"
+__slurm_suse_packages:
+  client: [slurm-node, munge]
+  slurmctld: [slurm, munge]
+  slurmd: [slurm-node, munge]
+  slurmdbd: [munge, slurm-slurmdbd]
+
+__slurm_packages: >-
+  {{
+    __slurm_debian_packages if __slurm_debian
+    else __slurm_suse_packages if __slurm_suse
+    else __slurm_redhat_packages
+  }}
 
 __slurmdbd_config_default:
   AuthType: auth/munge
